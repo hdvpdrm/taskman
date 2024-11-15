@@ -14,6 +14,8 @@
 
 #define _ADD_TASK 5
 
+#define _FINISH_TASK 6
+
 typedef struct
 {
   short priority;
