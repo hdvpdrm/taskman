@@ -15,7 +15,7 @@ short parse_list(char* list_option)
 }
 short parse_add(int argc, char** argv, NewTask* task)
 {
-  task->title = (char*)malloc(sizeof(char)*strlen(argv[2]));
+  task->title = (char*)malloc(sizeof(char)*strlen(argv[2]) + 1);
   if(task->title == NULL)
     {
       printf("taskman error: shit happened while trying to allocate new memory!\n");
@@ -25,7 +25,7 @@ short parse_add(int argc, char** argv, NewTask* task)
   strcpy(task->title,argv[2]);
 
   
-  task->description = (char*)malloc(sizeof(char)*strlen(argv[3]));
+  task->description = (char*)malloc(sizeof(char)*strlen(argv[3]) + 1);
   if(task->description == NULL)
     {
       printf("taskman error: shit happened while trying to allocate new memory!\n");
@@ -84,7 +84,10 @@ short parse_arguments(int argc, char** argv, void** output)
 	  if(parse_add(argc,argv,(NewTask*) *output) == 0)
 	    return _ADD_TASK;
 	  else
-	    return _ERROR;
+	    {
+	      free(*output);
+	      return _ERROR;
+	    }
 	}
       else
       if(strcmp(argv[i],"--help") == 0 ||
