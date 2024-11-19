@@ -1,7 +1,43 @@
 #include"task.h"
 
 
-bool create_task(char* title, char* description, short priority, int task_amount)
+bool read_taskman_file(char* path)
+{
+    FILE* fp;
+    char errbuf[200];
+
+    fp = fopen(path, "r");
+    if (!fp)
+      {
+        error("cannot open sample.toml - ", strerror(errno));
+	fclose(fp);
+	return false;
+      }
+
+    conf = toml_parse_file(fp, errbuf, sizeof(errbuf));
+    if (!conf)
+      {
+        error("cannot parse - ", errbuf);
+	fclose(fp);
+	return false;
+    }
+
+    fclose(fp);
+
+    read_tasks_amount();
+    return true;
+}
+void read_tasks_amount(void)
+{
+  toml_datum_t amount = toml_int_in(conf,"records_amount");
+  if(!amount.ok)
+    {
+      error("failed to retrieve amount of tasks.","");
+      exit(-1);
+    }
+  tasks_amount = (int)amount.u.i;
+}
+bool create_task(char* title, char* description, short priority)
 {
   char* path = expand_path("~/.taskman");
   if(path == NULL) return false;
@@ -13,9 +49,9 @@ bool create_task(char* title, char* description, short priority, int task_amount
       return false;
     }
   fseek(file,0,SEEK_END);
-  fprintf(file,"\n\n\n[task-%d]\ntitle=%s\ndesc=%s\npriority=%d\n",task_amount+1,title,description,(int)priority);
+  fprintf(file,"\n\n\n[task-%d]\ntitle='%s'\ndesc='%s'\npriority=%d\n",tasks_amount+1,title,description,(int)priority);
 
-  update_task_amount(task_amount+1,file);
+  update_task_amount(tasks_amount+1,file);
   fclose(file);
   return true;
 }
