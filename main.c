@@ -37,8 +37,13 @@ bool prepare_taskman_file(void)
       printf("taskman error: failed to expand path '%s'\n",task_file);
       return -2;
     }
+
   
-  if(file_exists(task_file))return true;
+  if(file_exists(task_file))
+    {
+      read_taskman_file(task_file);
+      return true;
+    }
 
   if(!create_empty_task_file(task_file))
     {
@@ -47,7 +52,7 @@ bool prepare_taskman_file(void)
       return false;
     }
 
-  printf("created initial taskman file '%s',task_file\n");
+  printf("created initial taskman file '%s'\n",task_file);
   free(task_file);
   return true;
 }
@@ -74,7 +79,10 @@ int run(int argc, char** argv)
   if(result == _ADD_TASK)
     {
       NewTask* task = (NewTask*)output;
-      
+      if(create_task(task->title,task->description,task->priority))
+	{
+	  printf("created task successfully!\n");
+	}
       free(task->title);
       free(task->description);
       free(task);
