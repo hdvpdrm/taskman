@@ -11,6 +11,8 @@
 
 bool file_exists(char *filename);
 bool create_task(char* title, char* description, short priority, int task_amount);
+bool update_task_amount(int new_amount,FILE* file);
+
 bool create_empty_task_file(char* path);
 
 char* expand_path(const char* path);
