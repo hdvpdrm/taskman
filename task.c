@@ -6,9 +6,21 @@ bool file_exists(char *filename)
   struct stat   buffer;   
   return (stat (filename, &buffer) == 0);
 }
-bool create_task(char* title, char* description, short priority)
+bool create_task(char* title, char* description, short priority, int task_amount)
 {
+  char* path = expand_path("~/.taskman");
+  if(path == NULL) return false;
   
+  FILE* file = fopen(path,"a");
+  if(file == NULL)
+    {
+      printf("taskman error: failed to open '%s'\n",path);
+      return false;
+    }
+  
+  fprintf(file,"\n\n\n[task-%d]\ntitle=%s\ndesc=%s\npriority=%d\n",task_amount+1,title,description,(int)priority);
+  fclose(file);
+  return true;
 }
 bool create_empty_task_file(char* path)
 {
@@ -18,7 +30,7 @@ bool create_empty_task_file(char* path)
       printf("taskman error: failed to open '%s'\n",path);
       return false;
     }
-  fprintf(file,"records_amount = 0");
+  fprintf(file,"records_amount = 0\n");
   fclose(file);
 
   return true;

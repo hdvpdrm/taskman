@@ -10,7 +10,7 @@
 
 
 bool file_exists(char *filename);
-bool create_task(char* title, char* description, short priority);
+bool create_task(char* title, char* description, short priority, int task_amount);
 bool create_empty_task_file(char* path);
 
 char* expand_path(const char* path);
