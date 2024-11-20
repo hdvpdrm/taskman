@@ -49,8 +49,18 @@ bool create_task(char* title, char* description, short priority)
       return false;
     }
   fseek(file,0,SEEK_END);
-  fprintf(file,"\n\n\n[task-%d]\ntitle='%s'\ndesc='%s'\npriority=%d\n",tasks_amount+1,title,description,(int)priority);
 
+  time_t t = time(NULL);
+  struct tm *tm = localtime(&t);
+  char* start_time = asctime(tm);
+  start_time[strlen(start_time)-1] = '\0';
+  
+  fprintf(file,"\n\n\n[task-%d]\n"
+	        "title='%s'\n"
+	        "desc='%s'\n"
+                "priority=%d\n"
+	        "start='%s'\n",tasks_amount+1,title,description,(int)priority,start_time);
+  
   update_task_amount(tasks_amount+1,file);
   fclose(file);
   return true;
