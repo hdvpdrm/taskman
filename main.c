@@ -2,6 +2,8 @@
 #include"argparser.h"
 #include"task.h"
 
+int tasks_len = 0;
+
 void print_help(void);
 bool prepare_taskman_file(void);
 int run(int argc, char** argv);
@@ -9,7 +11,6 @@ int main(int argc, char** argv)
 {
   if(!prepare_taskman_file()) return -3;
 
-  
   return run(argc, argv);
 }
 void print_help(void)
@@ -41,7 +42,7 @@ bool prepare_taskman_file(void)
   
   if(file_exists(task_file))
     {
-      read_taskman_file(task_file);
+      read_taskman_file(task_file,&tasks_len);
       return true;
     }
 
@@ -95,12 +96,29 @@ int run(int argc, char** argv)
   else
   if(result == _LIST_FINISHED)
     {
-
     }
   else
   if(result == _LIST_IN_PROGRESS)
     {
-      
+      NewTask* tasks = NULL;
+
+      if(read_tasks(&tasks) == tasks_len)
+	{
+	  for(int i = 0;i<tasks_len;++i)
+	    {
+	      printf("title:%s\n",tasks[i].title);
+	      printf("priority:%d\n",tasks[i].priority);
+	      printf("description:%s\n",tasks[i].description);
+	      printf("start:%s\n",tasks[i].start);
+	      printf("---\n");
+	    }
+	}
+      else
+	{
+	  printf("taskman error: failed to read tasks!\n");
+	  return -4;
+	}
+      free(tasks);
     }
 
   return 0;
