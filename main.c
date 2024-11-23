@@ -110,7 +110,9 @@ int run(int argc, char** argv)
 	      printf("priority:%d\n",tasks[i].priority);
 	      printf("description:%s\n",tasks[i].description);
 	      printf("start:%s\n",tasks[i].start);
-	      printf("---\n");
+
+	      if(i+1 < tasks_len)
+		printf("---\n");
 	    }
 	}
       else
