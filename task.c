@@ -1,7 +1,7 @@
 #include"task.h"
 
 
-bool read_taskman_file(char* path)
+bool read_taskman_file(char* path, int* tasks_len)
 {
     FILE* fp;
     char errbuf[200];
@@ -25,6 +25,7 @@ bool read_taskman_file(char* path)
     fclose(fp);
 
     read_tasks_amount();
+    *tasks_len = tasks_amount;
     return true;
 }
 void read_tasks_amount(void)
@@ -37,6 +38,81 @@ void read_tasks_amount(void)
     }
   tasks_amount = (int)amount.u.i;
 }
+char* get_table_name(int i)
+{
+  int len = floor(log10(abs(i))) + 1; //old school hack.
+  char* buffer = malloc(sizeof(char)*(len+5));
+  if(buffer == NULL) return NULL;
+
+  strcpy(buffer,"task-");
+
+  char* num_buffer = malloc(sizeof(char)* len);
+
+  if(num_buffer == NULL) return NULL;
+  snprintf(num_buffer, len+1, "%d", i);
+
+    for(int i = 0;i<len;++i)
+   {
+      buffer[i+5] = num_buffer[i];
+    }
+    free(num_buffer);
+  
+  return buffer;
+}
+int read_tasks(NewTask** tasks)
+{
+  *tasks = malloc(sizeof(NewTask)*tasks_amount);
+  if(tasks == NULL) return 0;
+  
+  for(int i = 0;i<tasks_amount;++i)
+    {
+      char* table_name =  get_table_name(i+1);
+      toml_table_t* task = toml_table_in(conf,table_name);
+      if(!task)
+	{
+	  printf("taskman error: well, unable to find %s table in taskman file!",table_name);
+	}
+      else
+	{
+	  toml_datum_t title = toml_string_in(task,"title");
+	  if(!title.ok)
+	    {
+	      printf("taskman error: failed to parse table...");
+	      return -1;
+	    }
+	  toml_datum_t desc = toml_string_in(task,"desc");
+	  if(!desc.ok)
+	    {
+	      printf("taskman error: failed to parse table...");
+	      return -1;
+	    }
+	  toml_datum_t start = toml_string_in(task,"start");
+	  if(!start.ok)
+	    {
+	      printf("taskman error: failed to parse table...");
+	      return -1;
+	    }
+	  toml_datum_t priority = toml_int_in(task,"priority");
+	  if(!priority.ok)
+	    {
+	      printf("taskman error: failed to parse table...");
+	      return -1;
+	    }
+	  (*tasks)[i].priority = (int)priority.u.i;
+	  if(!set_str_values(&(*tasks)[i],title.u.s,desc.u.s,start.u.s))
+	    {
+	      printf("taskman error: failed to set string values while parsing table...");
+	      return -1;
+	    }
+	  
+	}
+      free(table_name);
+      
+    }
+
+  return tasks_amount;
+}
+
 bool create_task(char* title, char* description, short priority)
 {
   char* path = expand_path("~/.taskman");
