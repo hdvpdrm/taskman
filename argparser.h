@@ -4,6 +4,7 @@
 #include<string.h>
 #include<stdlib.h>
 #include"util_functions.h"
+#include"task_struct.h"
 
 #define _ERROR -1
 #define _HELP 1
@@ -15,13 +16,6 @@
 #define _ADD_TASK 5
 
 #define _FINISH_TASK 6
-
-typedef struct
-{
-  short priority;
-  char* title;
-  char* description;
-} NewTask;
 
 short parse_list(char* list_option);
 short parse_add(int argc, char** argv, NewTask* task);
