@@ -38,4 +38,3 @@ char* expand_path(const char* path)
     return expanded_path;
 
 }
-
