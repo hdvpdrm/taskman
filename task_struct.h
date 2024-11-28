@@ -9,10 +9,10 @@ typedef struct
   short priority;
   char* title;
   char* description;
-  char* start;
+  bool status;
 } NewTask;
 
-bool set_str_values(NewTask* task, char* title, char* desc, char* start);
+bool set_str_values(NewTask* task, char* title, char* desc);
 
 
 #endif
