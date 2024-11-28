@@ -24,10 +24,11 @@ void read_tasks_amount(void);
 char* get_table_name(int i);
 int read_tasks(NewTask** tasks);
 
-bool create_task(char* title, char* description, short priority);
+bool create_task(char* title, char* description, short priority,bool status);
 bool update_task_amount(int new_amount,FILE* file);
 
 bool create_empty_task_file(char* path);
 
+bool mark_as_done(int task_id);
 
 #endif

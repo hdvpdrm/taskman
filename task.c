@@ -86,12 +86,6 @@ int read_tasks(NewTask** tasks)
 	      printf("taskman error: failed to parse table...");
 	      return -1;
 	    }
-	  toml_datum_t start = toml_string_in(task,"start");
-	  if(!start.ok)
-	    {
-	      printf("taskman error: failed to parse table...");
-	      return -1;
-	    }
 	  toml_datum_t priority = toml_int_in(task,"priority");
 	  if(!priority.ok)
 	    {
@@ -99,7 +93,18 @@ int read_tasks(NewTask** tasks)
 	      return -1;
 	    }
 	  (*tasks)[i].priority = (int)priority.u.i;
-	  if(!set_str_values(&(*tasks)[i],title.u.s,desc.u.s,start.u.s))
+	  toml_datum_t status = toml_int_in(task,"status");
+	  if(!status.ok)
+	    {
+	      (*tasks)[i].status = false;
+	    }
+	  else
+	    {
+	      (*tasks)[i].status = status.u.b;
+	    }
+
+	  
+	  if(!set_str_values(&(*tasks)[i],title.u.s,desc.u.s))
 	    {
 	      printf("taskman error: failed to set string values while parsing table...");
 	      return -1;
@@ -113,7 +118,7 @@ int read_tasks(NewTask** tasks)
   return tasks_amount;
 }
 
-bool create_task(char* title, char* description, short priority)
+bool create_task(char* title, char* description, short priority,bool status)
 {
   char* path = expand_path("~/.taskman");
   if(path == NULL) return false;
@@ -126,16 +131,12 @@ bool create_task(char* title, char* description, short priority)
     }
   fseek(file,0,SEEK_END);
 
-  time_t t = time(NULL);
-  struct tm *tm = localtime(&t);
-  char* start_time = asctime(tm);
-  start_time[strlen(start_time)-1] = '\0';
-  
   fprintf(file,"\n\n\n[task-%d]\n"
 	        "title='%s'\n"
 	        "desc='%s'\n"
                 "priority=%d\n"
-	        "start='%s'\n",tasks_amount+1,title,description,(int)priority,start_time);
+	        "status=%d\n"
+	  ,tasks_amount+1,title,description,(int)priority,(int)status);
   
   update_task_amount(tasks_amount+1,file);
   fclose(file);
@@ -145,7 +146,6 @@ bool update_task_amount(int new_amount,FILE* file)
 {
   const char* first_line = "records_amount = 0";
   fseek(file,strlen(first_line)-1,SEEK_SET);
-  printf("%d\n",ftell(file));
   fprintf(file,"%d",new_amount);
 }
 bool create_empty_task_file(char* path)
@@ -159,5 +159,50 @@ bool create_empty_task_file(char* path)
   fprintf(file,"records_amount = 0\n");
   fclose(file);
 
+  return true;
+}
+bool mark_as_done(int task_id)
+{
+  char* path = expand_path("~/.taskman");
+  if(path == NULL)
+    {
+      printf("taskman error: unable to open taskman file!\n");
+      return false;
+    }
+
+  NewTask* tasks = NULL;
+  if(read_tasks(&tasks) == 0)
+    {
+      printf("taskman error: unable to read taskman file!\n");
+      return false;
+    }
+  
+  
+  if(remove(path) != 0)
+    {
+      printf("taskman error: unable to erase taskman file!\n");
+      return false;
+    }
+
+  if(!create_empty_task_file(path))
+    {
+      printf("taskman error: unable to re-create taskman file!\n");
+      return false;
+    }
+
+  //overal this code demonstrates why global state is not good
+  int len = tasks_amount;
+  tasks_amount = 0; //to reset id setting
+  for(int i = 0;i<len;++i)
+    {
+      bool status = task_id - 1 == i?true:false;
+      if(!create_task(tasks[i].title,tasks[i].description,tasks[i].priority,status))
+      	{
+	  printf("taskman error:failed to re-write task!\n");
+	  return false;
+      	}
+    }
+  free(tasks);
+  
   return true;
 }
