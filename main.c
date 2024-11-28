@@ -86,7 +86,7 @@ int run(int argc, char** argv)
   if(result == _ADD_TASK)
     {
       NewTask* task = (NewTask*)output;
-      if(create_task(task->title,task->description,task->priority))
+      if(create_task(task->title,task->description,task->priority,false))
 	{
 	  printf("created task successfully!\n");
 	}
@@ -98,10 +98,45 @@ int run(int argc, char** argv)
   if(result == _FINISH_TASK)
     {
       int val = (int)output;
+
+      NewTask* tasks = NULL;
+
+      if(val-1 >= tasks_len)
+	{
+	  printf("taskman error: task id '%d' does not exist!",val);
+	  return -5;
+	}
+      if(read_tasks(&tasks) == tasks_len)
+	{
+	  mark_as_done(val);
+	}
+      else
+	{
+	  printf("taskman error: failed to read tasks!\n");
+	  return -4;
+	}
+      free(tasks);
     }
   else
   if(result == _LIST_FINISHED)
     {
+      NewTask* tasks = NULL;
+      if(read_tasks(&tasks) == tasks_len)
+	{
+	  for(int i = 0;i<tasks_len;++i)
+	    {
+	      if(tasks[i].status)
+		{
+		  printf("id:%d\n",i+1);
+		  printf("title:%s\n",tasks[i].title);
+		  printf("priority:%d\n",tasks[i].priority);
+		  printf("description:%s\n",tasks[i].description);
+
+		  if(i+1 < tasks_len)
+		    printf("---\n");
+		}
+	    }
+	}
     }
   else
   if(result == _LIST_IN_PROGRESS)
@@ -112,13 +147,16 @@ int run(int argc, char** argv)
 	{
 	  for(int i = 0;i<tasks_len;++i)
 	    {
-	      printf("title:%s\n",tasks[i].title);
-	      printf("priority:%d\n",tasks[i].priority);
-	      printf("description:%s\n",tasks[i].description);
-	      printf("start:%s\n",tasks[i].start);
+	      if(!tasks[i].status)
+		{
+		  printf("id:%d\n",i+1);
+		  printf("title:%s\n",tasks[i].title);
+		  printf("priority:%d\n",tasks[i].priority);
+		  printf("description:%s\n",tasks[i].description);
 
-	      if(i+1 < tasks_len)
-		printf("---\n");
+		  if(i+1 < tasks_len)
+		    printf("---\n");
+		}
 	    }
 	}
       else
