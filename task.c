@@ -49,6 +49,7 @@ char* get_table_name(int i)
   char* num_buffer = malloc(sizeof(char)* len);
 
   if(num_buffer == NULL) return NULL;
+  
   snprintf(num_buffer, len+1, "%d", i);
 
     for(int i = 0;i<len;++i)

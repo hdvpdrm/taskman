@@ -9,7 +9,7 @@ bool prepare_taskman_file(void);
 int run(int argc, char** argv);
 int main(int argc, char** argv)
 {
-  if(argc <= 1)
+  if(argc == 1)
     {
       print_help();
       return 0;
@@ -41,8 +41,8 @@ bool prepare_taskman_file(void)
   char* task_file = expand_path("~/.taskman");
   if(task_file == NULL)
     {
-      printf("taskman error: failed to expand path '%s'\n",task_file);
-      return -2;
+      printf("taskman error: failed to expand path '%s'\n","~/.taskman");
+      return false;
     }
 
   
